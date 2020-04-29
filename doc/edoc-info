@@ -1,0 +1,4 @@
+%% encoding: UTF-8
+{application,ematrixd}.
+{modules,[client_server_login_handler,client_server_version_handler,
+          ematrixd_app,ematrixd_sup,emd_cowboy_cors]}.

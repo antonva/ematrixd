@@ -1,5 +1,5 @@
 {application, ematrixd,
- [{description, "An OTP application"},
+ [{description, "A Matrix homeserver"},
   {vsn, "0.1.0"},
   {registered, []},
   {mod, {ematrixd_app, []}},

@@ -30,7 +30,7 @@ start(_StartType, _StartArgs) ->
     Routes = [
               {'_', [
                      {"/_matrix/client/versions", client_server_version_handler, []},
-                     {"/_matrix/client/r0/login", client_server_login_handler, [login]},
+                     {"/_matrix/client/r0/login", login, []},
                      {"/_matrix/client/r0/logout", client_server_login_handler, [logout]},
                      {"/_matrix/client/r0/logout/all", client_server_login_handler, [logout_all]}
                     ]}

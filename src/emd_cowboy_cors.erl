@@ -15,6 +15,16 @@
 %% along with ematrixd.  If not, see <https://www.gnu.org/licenses/>.
 %%%-------------------------------------------------------------------
 
+%%%-------------------------------------------------------------------
+%% @doc ematrixd cowboy cors middleware.
+%% Ensures that all requests have the appropriate CORS headers as
+%% defined in the spec.
+%%
+%% This is coincidentally also the place where the server header is
+%% updated. TODO: move that somewhere else?
+%% @end
+%%%-------------------------------------------------------------------
+
 -module(emd_cowboy_cors).
 
 -behaviour(cowboy_middleware).
