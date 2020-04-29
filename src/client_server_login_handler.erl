@@ -4,6 +4,7 @@
 %%% @doc Login/Logout methods of the Matrix Client-Server specification
 %%% @end
 %%%-------------------------------------------------------------------
+
 -module(client_server_login_handler).
 -compile(export_all).
 
@@ -78,6 +79,9 @@ handle_login(Req=#{method := <<"POST">>}, State) ->
 handle_logout(Req=#{method := <<"POST">>}, State) ->
     Body = <<"{\"logout_implement\": \"me\"}">>,
     cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>}, Body, Req),
+    {stop, Req, State};
+handle_logout(Req=#{method := <<"OPTIONS">>}, State) ->
+    ematrixd:handle_cors(<<"">>, Req),
     {stop, Req, State}.
 
 %%%-------------------------------------------------------------------
@@ -94,7 +98,7 @@ handle_logout(Req=#{method := <<"POST">>}, State) ->
 %% including the token used in the request, and therefore the attacker
 %% is unable to take over the account in this way.
 %%%-------------------------------------------------------------------
-handle_logout_all(Req, State) ->
+handle_logout_all(Req=#{method := <<"POST">>}, State) ->
     % Need to handle POST here and disallow GET
     Body = <<"{\"logout_all_implement\": \"me\"}">>,
     {Body, Req, State}.

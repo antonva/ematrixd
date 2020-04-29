@@ -37,7 +37,8 @@ start(_StartType, _StartArgs) ->
              ],
     Dispatch = cowboy_router:compile(Routes),
     {ok, _} = cowboy:start_clear(http, [{port, 8080}], #{
-                                                         env => #{dispatch => Dispatch}
+                                                         env => #{dispatch => Dispatch},
+                                                         middlewares => [cowboy_router, emd_cowboy_cors, cowboy_handler]
                                                         }),
     ematrixd_sup:start_link().
 
