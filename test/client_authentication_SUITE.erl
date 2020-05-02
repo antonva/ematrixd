@@ -4,12 +4,10 @@
 %%% @doc Test cases for the Client Authentication part of the Matrix
 %%%      Client-Server API.
 %%% @end
-%%% Created : 28 Apr 2020 by  <enoch@3Jane>
 %%%-------------------------------------------------------------------
 -module(client_authentication_SUITE).
 
 -compile(export_all).
-
 -include_lib("common_test/include/ct.hrl").
 
 %%--------------------------------------------------------------------

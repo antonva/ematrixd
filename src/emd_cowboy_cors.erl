@@ -17,6 +17,7 @@
 
 %%%-------------------------------------------------------------------
 %% @doc ematrixd cowboy cors middleware.
+%%
 %% Ensures that all requests have the appropriate CORS headers as
 %% defined in the spec.
 %%
