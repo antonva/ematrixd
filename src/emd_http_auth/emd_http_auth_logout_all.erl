@@ -1,52 +1,55 @@
 %%%-------------------------------------------------------------------
-%% This file is part of ematrixd.
-%%
-%% ematrixd is free software: you can redistribute it and/or modify
-%% it under the terms of the GNU General Public License as published by
-%% the Free Software Foundation, either version 3 of the License, or
-%% (at your option) any later version.
-%%
-%% ematrixd is distributed in the hope that it will be useful,
-%% but WITHOUT ANY WARRANTY; without even the implied warranty of
-%% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-%% GNU General Public License for more details.
-%%
-%% You should have received a copy of the GNU General Public License
-%% along with ematrixd.  If not, see <https://www.gnu.org/licenses/>.
-%%%-------------------------------------------------------------------
-
-%%%-------------------------------------------------------------------
 %%% @author  Anton Vilhelm Ásgeirsson <anton.v.asgeirsson@gmail.com>
 %%% @copyright (C) 2020, Anton Vilhelm Ásgeirsson
 %%% @doc Logout all request handler for the Matrix Client-Server Spec.
 %%% @end
 %%%-------------------------------------------------------------------
 
+%%%-------------------------------------------------------------------
+%% This file is part of ematrixd.
+%%
+%% ematrixd is free software: you can redistribute it and/or modify
+%% it under the terms of the GNU Affero General Public License as
+%% published by the Free Software Foundation, either version 3 of the
+%% License, or  (at your option) any later version.
+%%
+%% ematrixd is distributed in the hope that it will be useful,
+%% but WITHOUT ANY WARRANTY; without even the implied warranty of
+%% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+%% GNU Affero General Public License for more details.
+%%
+%% You should have received a copy of the GNU Affero General Public
+%% License along with ematrixd.
+%% If not, see <https://www.gnu.org/licenses/>.
+%%%-------------------------------------------------------------------
+
+
 -module(emd_http_auth_logout_all).
 -export([
          init/2,
          allowed_methods/2,
          content_types_provided/2,
-         content_types_accepted/2,
-         handle_request/2
+         content_types_accepted/2
         ]).
+
+-export([handle_logout_all/2]).
 
 %% API
 init(Req, Opts) ->
     {cowboy_rest, Req, Opts}.
 
 allowed_methods(Req, State) ->
-    Methods = [<<"POST">>],
+    Methods = [<<"POST">>, <<"OPTIONS">>],
     {Methods, Req, State}.
 
 content_types_provided(Req, State) ->
     {[
-      {<<"application/json">>, handle_request}
+      {<<"application/json">>, handle_logout_all}
      ], Req, State}.
 
 content_types_accepted(Req, State) ->
     {[
-      {<<"application/json">>, handle_request}
+      {<<"application/json">>, handle_logout_all}
      ], Req, State}.
 
 %% Internal
@@ -77,9 +80,8 @@ handle_request(Req, State) ->
 post_logout_all(Req=#{method := <<"POST">>}, State) ->
     % Need to handle POST here and disallow GET
     Body = <<"{\"logout_all_implement\": \"me\"}">>,
-    {Body, Req, State}.
-
-wrong_method(Req, State) ->
+    {Body, Req, State};
+post_logout_all(Req, State) ->
     Body = <<"{\"error\": \"emd_method_not_allowed\"}">>,
     cowboy_req:reply(405, #{<<"content-type">> => <<"application/json">>}, Body, Req),
     {stop, Req, State}.
