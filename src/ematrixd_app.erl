@@ -1,23 +1,26 @@
-%%-------------------------------------------------------------------
+%%%-------------------------------------------------------------------
+%%% @author  Anton Vilhelm Ásgeirsson <anton.v.asgeirsson@gmail.com>
+%%% @copyright (C) 2020, Anton Vilhelm Ásgeirsson
+%%% @doc ematrix public API
+%%% @end
+%%%-------------------------------------------------------------------
+
+%%%-------------------------------------------------------------------
 %% This file is part of ematrixd.
 %%
 %% ematrixd is free software: you can redistribute it and/or modify
-%% it under the terms of the GNU General Public License as published by
-%% the Free Software Foundation, either version 3 of the License, or
-%% (at your option) any later version.
+%% it under the terms of the GNU Affero General Public License as
+%% published by the Free Software Foundation, either version 3 of the
+%% License, or  (at your option) any later version.
 %%
 %% ematrixd is distributed in the hope that it will be useful,
 %% but WITHOUT ANY WARRANTY; without even the implied warranty of
 %% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-%% GNU General Public License for more details.
+%% GNU Affero General Public License for more details.
 %%
-%% You should have received a copy of the GNU General Public License
-%% along with ematrixd.  If not, see <https://www.gnu.org/licenses/>.
-%%%-------------------------------------------------------------------
-
-%%%-------------------------------------------------------------------
-%% @doc ematrixd public API
-%% @end
+%% You should have received a copy of the GNU Affero General Public
+%% License along with ematrixd.
+%% If not, see <https://www.gnu.org/licenses/>.
 %%%-------------------------------------------------------------------
 
 -module(ematrixd_app).
@@ -25,7 +28,10 @@
 -behaviour(application).
 -export([start/2, stop/1]).
 
+
 start(_StartType, _StartArgs) ->
+    {ok, Port} = application:get_env(ematrixd, http_port),
+    {ok, Ssl} = application:get_env(ematrixd, ssl),
     Routes = [
         {'_', [
                {"/_matrix/client/versions",                                           emd_http_api_versions, []},
@@ -120,11 +126,24 @@ start(_StartType, _StartArgs) ->
               ]}
              ],
     Dispatch = cowboy_router:compile(Routes),
-    {ok, _} = cowboy:start_clear(http,
-                                 [{port, 8080}],
-                                 #{env => #{dispatch => Dispatch},
-                                   middlewares => [cowboy_router, emd_cowboy_cors, cowboy_handler]
-                                  }),
+    {ok, _} = case Ssl of
+                  true ->
+                      {ok, _} = cowboy:start_tls(http,
+                                                 [{port, Port}],
+                                                 #{env => #{dispatch => Dispatch},
+                                                   middlewares => [cowboy_router,
+                                                                   emd_cowboy_logger,
+                                                                   emd_cowboy_cors,
+                                                                   cowboy_handler]});
+                  false ->
+                      {ok, _} = cowboy:start_clear(http,
+                                                   [{port, Port}],
+                                                   #{env => #{dispatch => Dispatch},
+                                                     middlewares => [cowboy_router,
+                                                                     emd_cowboy_logger,
+                                                                     emd_cowboy_cors,
+                                                                     cowboy_handler]})
+              end,
     ematrixd_sup:start_link().
 
 stop(_State) ->
