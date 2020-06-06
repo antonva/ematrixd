@@ -52,17 +52,6 @@ content_types_accepted(Req, State) ->
       {<<"application/json">>, handle_logout_all}
      ], Req, State}.
 
-%% Internal
-handle_request(Req, State) ->
-    Method = cowboy_req:method(Req),
-    {Body, Req1, State1} = case Method of
-                               <<"POST">> ->
-                                   post_logout_all(Req, State);
-                               _ ->
-                                   wrong_method(Req, State)
-                           end,
-    {Body, Req1, State1}.
-
 %%%-------------------------------------------------------------------
 %% 5.4.4 POST /_matrix/client/r0/logout/all
 %% Invalidates all access tokens for a user, so that they can no
@@ -77,11 +66,10 @@ handle_request(Req, State) ->
 %% including the token used in the request, and therefore the attacker
 %% is unable to take over the account in this way.
 %%%-------------------------------------------------------------------
-post_logout_all(Req=#{method := <<"POST">>}, State) ->
-    % Need to handle POST here and disallow GET
+handle_logout_all(Req=#{method := <<"POST">>}, State) ->
     Body = <<"{\"logout_all_implement\": \"me\"}">>,
     {Body, Req, State};
-post_logout_all(Req, State) ->
+handle_logout_all(Req, State) ->
     Body = <<"{\"error\": \"emd_method_not_allowed\"}">>,
     cowboy_req:reply(405, #{<<"content-type">> => <<"application/json">>}, Body, Req),
     {stop, Req, State}.

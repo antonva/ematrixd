@@ -57,10 +57,13 @@ content_types_accepted(Req, State) ->
 %% Gets the homeserver's supported login types to authenticate users.
 %% Clients should pick one of these and supply it as the type when
 %% logging in.
+%%
+%% TODO: refactor to get login flows from other parts of emd
 %%%-------------------------------------------------------------------
 handle_login(Req=#{method := <<"GET">>}, State) ->
-    Body = <<"{\"login_get_implement\": \"me\"}">>,
-    {Body, Req, State};
+    Body = <<"{\"flows\": [{\"type\": \"m.login.password\"}]}">>,
+    cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>}, Body, Req),
+    {stop, Req, State};
 %%%-------------------------------------------------------------------
 %% 5.4.2 POST /_matrix/client/r0/login
 %% Authenticates the user, and issues an access token they can use to
