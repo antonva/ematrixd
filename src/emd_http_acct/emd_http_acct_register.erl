@@ -61,9 +61,27 @@ content_types_accepted(Req, State) ->
       {<<"application/json">>, handle_register}
      ], Req, State}.
 
+%%%-------------------------------------------------------------------
+%%% 5.6.1 POST /_matrix/client/r0/register
+%%% This API endpoint uses the User-Interactive Authentication API,
+%%% except in the cases where a guest account is being registered.
+%%%
+%%% TODO: As with login, figure out a better way to represent
+%%%       implemented login/reg flows.
+%%%-------------------------------------------------------------------
 handle_register(Req=#{method := <<"POST">>}, State) ->
-    Body = <<"{\"register_implement\": \"me\"}">>,
-    {Body, Req, State};
+    Body = <<"{\"flows\": [{\"type\": \"m.login.password\"}]}">>,
+    {ok, Data, Req1} = cowboy_req:read_body(Req),
+    case jiffy:decode(Data) of
+        {[{Auth, Username, Password, DeviceId, InitialDeviceDisplayName, InhibitLogin}]} ->
+            io:write(Username),
+            cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>}, Body, Req),
+            {stop, Req, State};
+        {[{_,InitialDeviceDisplayName}, {_,Auth}]} ->
+            io:format("~s~n", [InitialDeviceDisplayName]),
+            cowboy_req:reply(401, #{<<"content-type">> => <<"application/json">>}, Body, Req),
+            {stop, Req, State}
+    end;
 handle_register(Req, State) ->
     Body = <<"{\"error\": \"emd_method_not_allowed\"}">>,
     cowboy_req:reply(405, #{<<"content-type">> => <<"application/json">>}, Body, Req),

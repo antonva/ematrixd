@@ -1,11 +1,3 @@
-%%%-------------------------------------------------------------------
-%%% @author  Anton Vilhelm Ásgeirsson <anton.v.asgeirsson@gmail.com>
-%%% @copyright (C) 2020, Anton Vilhelm Ásgeirsson
-%%% @doc Login request handler for the Matrix Client-Server Spec.
-%%% @end
-%%%-------------------------------------------------------------------
-
-%%%-------------------------------------------------------------------
 %% This file is part of ematrixd.
 %%
 %% ematrixd is free software: you can redistribute it and/or modify
@@ -21,8 +13,10 @@
 %% You should have received a copy of the GNU Affero General Public
 %% License along with ematrixd.
 %% If not, see <https://www.gnu.org/licenses/>.
-%%%-------------------------------------------------------------------
-
+%%
+%% @author  Anton Vilhelm Ásgeirsson <anton.v.asgeirsson@gmail.com>
+%% @copyright (C) 2020, Anton Vilhelm Ásgeirsson
+%% @doc Login request handler for the Matrix Client-Server Spec.
 
 -module(emd_http_auth_login).
 -export([
@@ -57,13 +51,14 @@ content_types_accepted(Req, State) ->
 %% Gets the homeserver's supported login types to authenticate users.
 %% Clients should pick one of these and supply it as the type when
 %% logging in.
-%%
-%% TODO: refactor to get login flows from other parts of emd
 %%%-------------------------------------------------------------------
 handle_login(Req=#{method := <<"GET">>}, State) ->
-    Body = <<"{\"flows\": [{\"type\": \"m.login.password\"}]}">>,
-    cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>}, Body, Req),
+    {ok, AuthTypes} = emd_login:get_auth_types(),
+    Types = [{[{type,X}]} || X <- AuthTypes],
+    Flows = {[{flows,Types}]},
+    cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>}, jiffy:encode(Flows), Req),
     {stop, Req, State};
+
 %%%-------------------------------------------------------------------
 %% 5.4.2 POST /_matrix/client/r0/login
 %% Authenticates the user, and issues an access token they can use to

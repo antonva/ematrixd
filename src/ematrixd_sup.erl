@@ -29,7 +29,9 @@ init([]) ->
     SupFlags = #{strategy => one_for_all,
                  intensity => 0,
                  period => 1},
-    ChildSpecs = [],
+    LoginSup = {emd_login_sup, {emd_login_sup, start_link, []},
+                permanent, 2000, supervisor, [emd_login]},
+    ChildSpecs = [LoginSup],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions
