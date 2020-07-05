@@ -72,10 +72,43 @@ handle_login(Req=#{method := <<"GET">>}, State) ->
 %% invalidate any access token previously associated with that device.
 %% See https://matrix.org/docs/spec/client_server/latest#relationship-between-access-tokens-and-devices
 %%%-------------------------------------------------------------------
-handle_login(Req=#{method := <<"POST">>}, State) ->
-    Body = <<"{\"login_post_implement\": \"me\"}">>,
-    cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>}, Body, Req),
-    {stop, Req, State};
+handle_login(Req0=#{method := <<"POST">>}, State) ->
+    {ok, Data, Req} = cowboy_req:read_body(Req0),
+    Map = jiffy:decode(Data, [return_maps]),
+    #{<<"type">> := Type,
+      <<"device_id">> := DeviceId,
+      <<"initial_device_display_name">> := InitialDevName} = Map,
+    case Type of
+        <<"m.login.password">> ->
+            #{<<"password">> := Pass, <<"identifier">> := Id} = Map,
+            #{<<"type">> := IdType} = Id,
+            case IdType of
+                <<"m.id.user">> ->
+                    #{<<"user">> := User} = Id,
+                    io:format("~s, ~s, ~s, ~s", [User, Pass, IdType, Type]),
+                    emd_login:login(password, user, User, Pass, DeviceId, InitialDevName),
+                    cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>}, Data, Req),
+                    {stop, Req, State};
+                <<"m.id.thirdparty">> ->
+                    % TODO: Not implemented yet
+                    cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>}, [], Req),
+                    {stop, Req, State};
+                <<"m.id.phone">> ->
+                    % TODO: Not implemented yet
+                    cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>}, [], Req),
+                    {stop, Req, State};
+                _ ->
+                    Msg = erlang:iolist_to_binary([<<"Unknown identifier type: ">>, IdType]),
+                    Body = #{<<"errcode">> => <<"M_UNKNOWN">>, <<"error">> => Msg},
+                    cowboy_req:reply(400, #{<<"content-type">> => <<"application/json">>}, jiffy:encode(Body), Req),
+                    {stop, Req, State}
+            end;
+       _  ->
+            Msg = erlang:iolist_to_binary([<<"Unknown login type: ">>, Type]),
+            Body = #{<<"errcode">> => <<"M_UNKNOWN">>, <<"error">> => Msg},
+            cowboy_req:reply(400, #{<<"content-type">> => <<"application/json">>}, jiffy:encode(Body), Req),
+            {stop, Req, State}
+    end;
 handle_login(Req, State) ->
     Body = <<"{\"error\": \"emd_method_not_allowed\"}">>,
     cowboy_req:reply(405, #{<<"content-type">> => <<"application/json">>}, Body, Req),
