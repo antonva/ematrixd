@@ -1,0 +1,1 @@
+logger:update_primary_config(#{level => info, filter_default => log, filters => []}).

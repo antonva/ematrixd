@@ -1,13 +1,3 @@
-%%%-------------------------------------------------------------------
-%%% @author  Anton Vilhelm Ásgeirsson <anton.v.asgeirsson@gmail.com>
-%%% @copyright (C) 2020, Anton Vilhelm Ásgeirsson
-%%% @doc
-%%% The homeserver MAY provide a TURN server which clients can use to
-%%% contact a remote party.
-%%% @end
-%%%-------------------------------------------------------------------
-
-%%%-------------------------------------------------------------------
 %% This file is part of ematrixd.
 %%
 %% ematrixd is free software: you can redistribute it and/or modify
@@ -23,8 +13,13 @@
 %% You should have received a copy of the GNU Affero General Public
 %% License along with ematrixd.
 %% If not, see <https://www.gnu.org/licenses/>.
-%%%-------------------------------------------------------------------
-
+%%
+%% @author  Anton Vilhelm Ásgeirsson <anton.v.asgeirsson@gmail.com>
+%% @copyright (C) 2020, Anton Vilhelm Ásgeirsson
+%% @doc
+%% The homeserver MAY provide a TURN server which clients can use to
+%% contact a remote party.
+%% @end
 
 -module(emd_http_voip_turnserver).
 -export([

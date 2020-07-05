@@ -1,20 +1,3 @@
-%%%-------------------------------------------------------------------
-%% @author  Anton Vilhelm Ásgeirsson <anton.v.asgeirsson@gmail.com>
-%% @copyright (C) 2020, Anton Vilhelm Ásgeirsson
-%% @doc
-%% Register for an account on this homeserver.
-%%
-%% 5.5.1 POST /_matrix/client/r0/register
-%%
-%% [https://matrix.org/docs/spec/client_server/latest#id204]
-%%
-%% This API endpoint uses the User-Interactive-Authentication API,
-%% except in the cases where a guest account is being registered.
-%%
-%% @end
-%%%-------------------------------------------------------------------
-
-%%%-------------------------------------------------------------------
 %% This file is part of ematrixd.
 %%
 %% ematrixd is free software: you can redistribute it and/or modify
@@ -30,7 +13,20 @@
 %% You should have received a copy of the GNU Affero General Public
 %% License along with ematrixd.
 %% If not, see <https://www.gnu.org/licenses/>.
-%%%-------------------------------------------------------------------
+%%
+%% @author  Anton Vilhelm Ásgeirsson <anton.v.asgeirsson@gmail.com>
+%% @copyright (C) 2020, Anton Vilhelm Ásgeirsson
+%% @doc
+%% Register for an account on this homeserver.
+%%
+%% 5.5.1 POST /_matrix/client/r0/register
+%%
+%% [https://matrix.org/docs/spec/client_server/latest#id204]
+%%
+%% This API endpoint uses the User-Interactive-Authentication API,
+%% except in the cases where a guest account is being registered.
+%%
+%% @end
 
 -module(emd_http_acct_register).
 
