@@ -158,7 +158,7 @@ my_test_case() ->
 %% Comment = term()
 %% @end
 %%--------------------------------------------------------------------
-my_test_case(_Config) -> 
+my_test_case(_Config) ->
     ok.
 
 get_matrix_client_r0_login() ->
@@ -196,7 +196,27 @@ get_matrix_client_r0_logout_all(_Config) ->
 post_matrix_client_r0_register() ->
     [].
 post_matrix_client_r0_register(_Config) ->
-    {skip, <<"Unimplemented">>}.
+    Auth = #{
+             type => "m.login.password",
+             session => "1"
+            },
+    Req = #{
+            auth => Auth,
+            username => "cheeky_monkey",
+            password => "ilovebanananas",
+            device_id => "GHTYAJCE",
+            initial_device_display_name => "Jungle Phone",
+            inhibit_login => false
+           },
+    {ok, Result} = httpc:request(post,
+        {"http://localhost:8080/_matrix/client/r0/register?kind=user",
+            "",
+            "application/json",
+            jiffy:encode(Req)
+        }, [], []
+    ),
+    {{_, 200, _}, _Headers, _Body } = Result,
+    ok.
 
 post_matrix_client_r0_register_email_request_token() ->
     [].

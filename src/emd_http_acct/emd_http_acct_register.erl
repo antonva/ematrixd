@@ -76,14 +76,16 @@ handle_register(Req=#{method := <<"POST">>}, State) ->
     FindAuth = maps:find(<<"auth">>, Map),
     case parse_reg_request(FindAuth, Kind, Map) of
         {user, Params} ->
-            foo;
+            cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>}, [], Req),
+            {stop, Req, State};
         {guest, InitialDeviceDisplayName} ->
             % TODO: Not implemented yet
             % When registering a guest account, all parameters in the request body
             % with the exception of `initial_display_name` MUST BE ignored by the
             % server. The server MUST pick a `device_id` for the account regardless
             % of input.
-            cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>}, [], Req),
+            DisabledMsg = #{errcode => "M_FORBIDDEN", error => "Guest registration is disabled"},
+            cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>}, jiffy:encode(DisabledMsg), Req),
             {stop, Req, State};
         {error} ->
             % User interactive thingamabob, send login flows

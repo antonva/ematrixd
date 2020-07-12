@@ -50,7 +50,6 @@
           {error, Error :: {already_started, pid()}} |
           {error, Error :: term()} |
           ignore.
--doc 
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
