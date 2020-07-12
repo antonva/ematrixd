@@ -27,7 +27,9 @@
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
-         terminate/2, code_change/3, format_status/2, get_auth_types/0]).
+         terminate/2, code_change/3, format_status/2, get_auth_types/0,
+         login/6
+       ]).
 
 -define(SERVER, ?MODULE).
 
@@ -48,6 +50,7 @@
           {error, Error :: {already_started, pid()}} |
           {error, Error :: term()} |
           ignore.
+-doc 
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
@@ -186,6 +189,26 @@ format_status(_Opt, Status) ->
 %%--------------------------------------------------------------------
 get_auth_types() ->
     gen_server:call(?MODULE, get_auth_types).
+
+
+%%--------------------------------------------------------------------
+%% @private
+%% @doc
+%% Login using the m.login.password flow with an m.id.user identifier.
+%% TODO: Create a proper device_id generator scheme
+%% TODO: Create a proper access_token generator scheme
+%% @end
+%%--------------------------------------------------------------------
+login(password, user, User, Pass, SubmittedDeviceId, InitialDevName) ->
+    AccessToken = <<"2">>,
+    case SubmittedDeviceId of
+        {ok, DeviceId} ->
+            {ok, {erlang:iolist_to_binary([<<"@">>,User,<<":localhost:8080">>]), AccessToken, DeviceId}};
+        error ->
+            DeviceId = <<"3">>,
+            {ok, {erlang:iolist_to_binary([<<"@">>,User,<<":localhost:8080">>]), AccessToken, DeviceId}}
+    end.
+
 
 start() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).

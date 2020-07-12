@@ -75,9 +75,12 @@ handle_login(Req=#{method := <<"GET">>}, State) ->
 handle_login(Req0=#{method := <<"POST">>}, State) ->
     {ok, Data, Req} = cowboy_req:read_body(Req0),
     Map = jiffy:decode(Data, [return_maps]),
-    #{<<"type">> := Type,
-      <<"device_id">> := DeviceId,
-      <<"initial_device_display_name">> := InitialDevName} = Map,
+    #{<<"type">> := Type, <<"initial_device_display_name">> := InitialDevName} = Map,
+
+    % device_id is apparently optional, so DeviceId will be in the form of
+    % {ok, device_id} | error.
+    DeviceId = maps:find(<<"device_id">>, Map),
+
     case Type of
         <<"m.login.password">> ->
             #{<<"password">> := Pass, <<"identifier">> := Id} = Map,
@@ -85,9 +88,11 @@ handle_login(Req0=#{method := <<"POST">>}, State) ->
             case IdType of
                 <<"m.id.user">> ->
                     #{<<"user">> := User} = Id,
-                    io:format("~s, ~s, ~s, ~s", [User, Pass, IdType, Type]),
-                    emd_login:login(password, user, User, Pass, DeviceId, InitialDevName),
-                    cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>}, Data, Req),
+                    {ok, {UserId,
+                          AccessToken,
+                          ActualDeviceId}} = emd_login:login(password, user, User, Pass, DeviceId, InitialDevName),
+                    Body = #{<<"user_id">> => UserId, <<"access_token">> => AccessToken, <<"device_id">> => ActualDeviceId},
+                    cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>}, jiffy:encode(Body), Req),
                     {stop, Req, State};
                 <<"m.id.thirdparty">> ->
                     % TODO: Not implemented yet
@@ -113,4 +118,3 @@ handle_login(Req, State) ->
     Body = <<"{\"error\": \"emd_method_not_allowed\"}">>,
     cowboy_req:reply(405, #{<<"content-type">> => <<"application/json">>}, Body, Req),
     {stop, Req, State}.
-
