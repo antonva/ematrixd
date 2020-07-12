@@ -41,6 +41,7 @@ start_link() ->
 %%                  type => worker(),       % optional
 %%                  modules => modules()}   % optional
 init([]) ->
+    logger:update_primary_config(#{level => info, filter_default => log, filters => []}),
     SupFlags = #{strategy => one_for_all,
                  intensity => 0,
                  period => 1},
