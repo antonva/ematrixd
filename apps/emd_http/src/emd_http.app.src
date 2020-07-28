@@ -1,0 +1,19 @@
+{application, emd_http,
+ [{description, "ematrixd http application"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, {emd_http_app, []}},
+  {applications,
+   [kernel,
+    stdlib,
+    cowboy
+   ]},
+  {env,[
+        {http_port, 8080},
+        {ssl, false}
+       ]},
+  {modules, []},
+
+  {licenses, ["AGPL-3.0-or-later"]},
+  {links, []}
+ ]}.

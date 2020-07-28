@@ -33,9 +33,9 @@
 
 -define(SERVER, ?MODULE).
 
--record(state, {session_id,
-                type
-               }).
+-record(state, {session_id, type}).
+-record(emd_users, {user_id, user_name, password}).
+-record(emd_devices, {device_id, user_id, device_name, access_token}).
 
 %%%===================================================================
 %%% API

@@ -45,6 +45,7 @@
           {error, term()} |
           ignore.
 start_link() ->
+    mnesia:create_schema([[node()]]),
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 %%%===================================================================
