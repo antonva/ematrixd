@@ -1,3 +1,11 @@
+%%%-------------------------------------------------------------------
+%%% @author  Anton Vilhelm Ásgeirsson <anton.v.asgeirsson@gmail.com>
+%%% @copyright (C) 2020, Anton Vilhelm Ásgeirsson
+%%% @doc HTTP logging middleware
+%%% @end
+%%%-------------------------------------------------------------------
+
+%%%-------------------------------------------------------------------
 %% This file is part of ematrixd.
 %%
 %% ematrixd is free software: you can redistribute it and/or modify
@@ -13,21 +21,16 @@
 %% You should have received a copy of the GNU Affero General Public
 %% License along with ematrixd.
 %% If not, see <https://www.gnu.org/licenses/>.
-%%
-%% @author  Anton Vilhelm Ásgeirsson <anton.v.asgeirsson@gmail.com>
-%% @copyright (C) 2020, Anton Vilhelm Ásgeirsson
-%% @doc ematrix public API
+%%%-------------------------------------------------------------------
 
--module(ematrixd_app).
+-module(emd_cowboy_logger).
 
--behaviour(application).
--export([start/2, stop/1, init_mnesia_db/0]).
+-behaviour(cowboy_middleware).
 
+-export([execute/2]).
 
-start(_StartType, _StartArgs) ->
-    ematrixd_sup:start_link().
-
-stop(_State) ->
-    ok.
-
-%% internal functions
+execute(Req, Env) ->
+    Method = cowboy_req:method(Req),
+    Path = cowboy_req:path(Req),
+    logger:log(info,"~s\t~s",[Method,Path]),
+    {ok, Req, Env}.

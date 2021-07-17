@@ -16,59 +16,27 @@
 %%
 %% @author  Anton Vilhelm Ásgeirsson <anton.v.asgeirsson@gmail.com>
 %% @copyright (C) 2020, Anton Vilhelm Ásgeirsson
-%% @doc The ematrixd login server.
-
--module(emd_login).
+%% @doc The ematrixd session id generator
+-module(emd_auth_session).
+-include_lib("stdlib/include/ms_transform.hrl").
 
 -behaviour(gen_server).
 
 %% API
--export([start_link/0, get_auth_types/0, login/6]).
+-export([start_link/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
-         terminate/2, code_change/3, format_status/2
-       ]).
+         terminate/2, code_change/3, format_status/2]).
 
 -define(SERVER, ?MODULE).
 
--record(state, {session_id, type}).
--record(emd_users, {user_id, user_name, password}).
--record(emd_devices, {device_id, user_id, device_name, access_token}).
+-record(state, {}).
+-record(session, {id, type}).
 
 %%%===================================================================
 %%% API
 %%%===================================================================
-
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% Serves as the source of truth of which authentication types are
-%% implemented by the ematrixd login server.
-%% @end
-%%--------------------------------------------------------------------
-get_auth_types() ->
-    gen_server:call(?MODULE, get_auth_types).
-
-
-%%--------------------------------------------------------------------
-%% @private
-%% @doc
-%% Login using the m.login.password flow with an m.id.user identifier.
-%% TODO: Create a proper device_id generator scheme
-%% TODO: Create a proper access_token generator scheme
-%% @end
-%%--------------------------------------------------------------------
-login(password, user, User, Pass, SubmittedDeviceId, InitialDevName) ->
-    AccessToken = <<"2">>,
-    case SubmittedDeviceId of
-        {ok, DeviceId} ->
-            {ok, {erlang:iolist_to_binary([<<"@">>,User,<<":localhost:8080">>]), AccessToken, DeviceId}};
-        error ->
-            DeviceId = <<"3">>,
-            {ok, {erlang:iolist_to_binary([<<"@">>,User,<<":localhost:8080">>]), AccessToken, DeviceId}}
-    end.
-
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -90,10 +58,6 @@ start_link() ->
 %% @private
 %% @doc
 %% Initializes the server
-%%
-%% TODO: Server operators should be able to specify which login
-%%       methods their homeserver supports. Probably not m.login.dummy
-%%       though.
 %% @end
 %%--------------------------------------------------------------------
 -spec init(Args :: term()) -> {ok, State :: term()} |
@@ -103,16 +67,10 @@ start_link() ->
           ignore.
 init([]) ->
     process_flag(trap_exit, true),
-    State = {[ <<"m.login.password">>
-               %<<"m.login.recaptcha">>,
-               %<<"m.login.oauth2">>,
-               %<<"m.login.sso">>,
-               %<<"m.login.email.identity">>,
-               %<<"m.login.msisdn">>,
-               %<<"m.login.token">>,
-               %<<"m.login.dummy">>
-        ]},
-    {ok, State}.
+    <<I1:32/unsigned-integer, I2:32/unsigned-integer, I3:32/unsigned-integer>> = crypto:strong_rand_bytes(12),
+    rand:seed(exsplus, {I1, I2, I3}),
+    ets:new(sessions, [set, {keypos,#session.id}, private, named_table]),
+    {ok, #state{}}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -129,9 +87,6 @@ init([]) ->
           {noreply, NewState :: term(), hibernate} |
           {stop, Reason :: term(), Reply :: term(), NewState :: term()} |
           {stop, Reason :: term(), NewState :: term()}.
-handle_call(get_auth_types, _From, State) ->
-    {AuthTypes} = State,
-    {reply, {ok, AuthTypes}, State};
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
@@ -208,6 +163,22 @@ format_status(_Opt, Status) ->
 %%% Internal functions
 %%%===================================================================
 
-start() ->
-    quickrand:seed(),
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+%%--------------------------------------------------------------------
+%% Creates a new session id of 8 randomly generated integers.
+%% Will retry until a unique entry can be inserted into the ETS table.
+%% The Type argument can either be `login` or `registration`.
+%%--------------------------------------------------------------------
+create_session(Type) ->
+    SessionId = list_to_integer([rand:uniform(9) || _ <- lists:seq(1,8)]),
+    case ets:insert_new(sessions, #session{id=SessionId, type=Type}) of
+        true ->
+            Res = {ok, SessionId};
+        false ->
+            Res = create_session(Type)
+    end,
+    Res.
+
+delete_session(SessionId) ->
+    ets:select_delete(sessions, ets:fun2ms(fun(#session{id=Id}) when Id =:= SessionId -> true end)),
+    {ok, SessionId}.
+

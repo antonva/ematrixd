@@ -16,9 +16,11 @@
 %%
 %% @author  Anton Vilhelm Ásgeirsson <anton.v.asgeirsson@gmail.com>
 %% @copyright (C) 2020, Anton Vilhelm Ásgeirsson
-%% @doc The ematrixd login server supervisor.
+%% @doc The ematrixd authentication server supervisor.
+%% TODO: decide on splitting out different processes into different
+%% sub supervisors
 
--module(emd_login_sup).
+-module(emd_auth_sup).
 
 -behaviour(supervisor).
 
@@ -45,7 +47,6 @@
           {error, term()} |
           ignore.
 start_link() ->
-    mnesia:create_schema([[node()]]),
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 %%%===================================================================
@@ -71,14 +72,14 @@ init([]) ->
                  intensity => 1,
                  period => 5},
 
-    Login = #{id => 'Login',
-               start => {'emd_login', start_link, []},
+    Session = #{id => 'session',
+               start => {'emd_auth_session', start_link, []},
                restart => permanent,
                shutdown => 5000,
                type => worker,
-               modules => ['emd_login']},
+               modules => ['emd_auth_session']},
 
-    {ok, {SupFlags, [Login]}}.
+    {ok, {SupFlags, [Session]}}.
 
 %%%===================================================================
 %%% Internal functions

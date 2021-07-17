@@ -28,7 +28,7 @@
 %%
 %% @end
 
--module(emd_http_acct_register).
+-module(emd_http_auth_register).
 
 -export([
          init/2,
@@ -88,12 +88,13 @@ handle_register(Req=#{method := <<"POST">>}, State) ->
             cowboy_req:reply(403, #{<<"content-type">> => <<"application/json">>}, jiffy:encode(DisabledMsg), Req),
             {stop, Req, State};
         {error} ->
-            % User interactive thingamabob, send login flows
+            % User interactive API
             % TODO: Figure out what this should look like / diff between reg/login
             {ok, AuthTypes} = emd_login:get_auth_types(),
-            Types = [{[{type,X}]} || X <- AuthTypes],
-            Flows = {[{flows,Types}]},
-            cowboy_req:reply(200, #{<<"content-type">> => <<"application/json">>}, jiffy:encode(Flows), Req),
+            {ok, SessionId} = emd_auth_sup:start_registration(),
+            Types = [{[{type, X}]} || X <- AuthTypes],
+            Flows = {[{flows, Types}],{session, SessionId}},
+            cowboy_req:reply(401, #{<<"content-type">> => <<"application/json">>}, jiffy:encode(Flows), Req),
             {stop, Req, State}
     end;
 handle_register(Req, State) ->

@@ -1,3 +1,22 @@
+%%%-------------------------------------------------------------------
+%% @author  Anton Vilhelm Ásgeirsson <anton.v.asgeirsson@gmail.com>
+%% @copyright (C) 2020, Anton Vilhelm Ásgeirsson
+%% @doc
+%% Validate the email address that is being registered.
+%%
+%% 5.5.2 POST /_matrix/client/r0/register/email/requestToken
+%%
+%% [https://matrix.org/docs/spec/client_server/latest#id205]
+%%
+%% The homeserver must check that the given email address is not
+%% already associated with an account on this homeserver.
+%% The homeserver should validate the email itself, either by sending
+%% a validation email itself or by using a service it has control over.
+%%
+%% @end
+%%%-------------------------------------------------------------------
+
+%%%-------------------------------------------------------------------
 %% This file is part of ematrixd.
 %%
 %% ematrixd is free software: you can redistribute it and/or modify
@@ -13,21 +32,7 @@
 %% You should have received a copy of the GNU Affero General Public
 %% License along with ematrixd.
 %% If not, see <https://www.gnu.org/licenses/>.
-%%
-%% @author  Anton Vilhelm Ásgeirsson <anton.v.asgeirsson@gmail.com>
-%% @copyright (C) 2020, Anton Vilhelm Ásgeirsson
-%% @doc
-%% Validate the email address that is being registered.
-%%
-%% 5.5.2 POST /_matrix/client/r0/register/email/requestToken
-%%
-%% [https://matrix.org/docs/spec/client_server/latest#id205]
-%%
-%% The homeserver must check that the given email address is not
-%% already associated with an account on this homeserver.
-%% The homeserver should validate the email itself, either by sending
-%% a validation email itself or by using a service it has control over.
-%% @end
+%%%-------------------------------------------------------------------
 
 -module(emd_http_acct_register_email_reqtoken).
 

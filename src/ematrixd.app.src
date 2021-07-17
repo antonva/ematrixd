@@ -6,9 +6,12 @@
   {applications,
    [kernel,
     stdlib,
-    emd_http
+    cowboy
    ]},
-  {env,[]},
+  {env,[
+        {http_port, 8080},
+        {ssl, false}
+       ]},
   {modules, []},
 
   {licenses, ["AGPL-3.0-or-later"]},
